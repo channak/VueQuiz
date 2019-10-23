@@ -16,6 +16,7 @@
       <b-button 
         variant="primary" 
         @click="submitAnswer"
+        :disabled="selectedIndex===null||answered"
       >Submit</b-button>
       <b-button variant="success" href="#" @click="next">Next</b-button>
     </b-jumbotron>
@@ -33,6 +34,8 @@ export default {
   data() {
     return {
       selectedIndex: null,
+      correctIndex:null,
+      answered:false,
       shuffledAnswers:[]
     };
   },
@@ -45,6 +48,7 @@ export default {
       immediate:true,//get call when currentqusetion first pass as props
       handler(){
         this.selectedIndex=null
+        this.answered = false
         this.shuffleAnswers()
       }    
     }
@@ -56,12 +60,14 @@ export default {
     shuffleAnswers(){
       let answers = [...this.currentQuestion.incorrect_answers,this.currentQuestion.correct_answer]
       this.shuffledAnswers = _.shuffle(answers) 
+      this.correctIndex = this.shuffledAnswers.indexOf(this.currentQuestion.correct_answer)
     },
     submitAnswer(){
       let isCorrect = false
       if (this.selectedIndex===this.correctIndex) {
         isCorrect = true
       }
+      this.answered = true
       this.increment(isCorrect)
       
     }
