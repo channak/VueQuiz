@@ -9,7 +9,8 @@
           v-for="(answer, index) in answers"
           :key="index"
           @click.prevent="selectAnswer(index)"
-          :class="answerClass(index)"
+          :class="[answerClass(index),answered?'not-active':'']"    
+          
         >{{answer}}</b-list-group-item>
       </b-list-group>
 
@@ -107,4 +108,9 @@ export default {
 .red {
   background: red;
 }
+.not-active{
+  pointer-events: none;
+  cursor: default;
+}
+
 </style>
