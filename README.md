@@ -1,5 +1,8 @@
 # vquiz
 Vue quiz application using vuejs, vue router, vuex and REST API. 
+![Quiz Question](/images/Question.PNG)
+![Quiz Question](/images/Answer1.PNG)
+![Quiz Question](/images/Answer2.PNG)
 ## Project setup
 ```
 yarn install
