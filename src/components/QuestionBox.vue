@@ -1,43 +1,32 @@
 <template>
   <div class="question-box">
-    <b-jumbotron>
-      <template v-slot:lead>{{currentQuestion.question}}</template>
-
-      <hr class="my-4" />
-      <b-list-group>
+    <b-jumbotron v-if="allQuestions.length">
+      <template v-if="allQuestions.length" v-slot:lead>{{allQuestions[index].question}}</template>
+      <b-list-group v-if="allQuestions.length">
         <b-list-group-item
-          v-for="(answer, index) in answers"
-          :key="index"
-          @click.prevent="selectAnswer(index)"
-          :class="[answerClass(index),answered?'not-active':'']"    
+          v-for="(answers, i) in allQuestions[index].answer"
+          :key="i"
+          @click.prevent="selectAnswer(i)"
+          :class="[answerClass(i)]"    
           
-        >{{answer}}</b-list-group-item>
+        >{{unescape(answers)}}</b-list-group-item>
       </b-list-group>
-
-      <b-button 
-        variant="primary" 
-        @click="submitAnswer"
-        :disabled="selectedIndex===null||answered"
-      >Submit</b-button>
+      <b-button variant="success" href="#" @click="previous"
+        :disabled="index==0"
+        >Back</b-button>
       <b-button variant="success" href="#" @click="next">Next</b-button>
     </b-jumbotron>
+  
   </div>
 </template>
 
 <script>
 import _ from 'lodash'
-export default {
-  props: {
-    currentQuestion: Object,
-    next: Function,
-    increment:Function
-  },
+import { mapState} from 'vuex'
+export default { 
   data() {
     return {
-      selectedIndex: null,
-      correctIndex:null,
-      answered:false,
-      shuffledAnswers:[]
+      
     };
   },
   watch: {
@@ -49,48 +38,79 @@ export default {
       immediate:true,//get call when currentqusetion first pass as props
       handler(){
         this.selectedIndex=null
-        this.answered = false
-        this.shuffleAnswers()
+        this.answered = false        
       }    
     }
   },
   methods: {
     selectAnswer(index) {
       this.selectedIndex = index
+      //this.selectedIndice[this.index]=index
+      this.$set(this.selectedIndice,this.index,index)
     },
     shuffleAnswers(){
       let answers = [...this.currentQuestion.incorrect_answers,this.currentQuestion.correct_answer]
       this.shuffledAnswers = _.shuffle(answers) 
       this.correctIndex = this.shuffledAnswers.indexOf(this.currentQuestion.correct_answer)
     },
-    submitAnswer(){
-      let isCorrect = false
-      if (this.selectedIndex===this.correctIndex) {
-        isCorrect = true
-      }
-      this.answered = true
-      this.increment(isCorrect)
-      
-    },
     answerClass(index){
       let answerClass = ''
-      if(!this.answered&&this.selectedIndex===index){
+      if(this.selectedIndice[this.index]===index){
         answerClass = 'list-group-item-primary'
-      }else if(this.answered&&this.correctIndex===index){
-        answerClass = 'list-group-item-success'
-      }else if(this.answered&&this.selectedIndex===index&&this.correctIndex!==index){
-        answerClass = 'list-group-item-danger'
       }
       return answerClass
+    },
+    next() {
+      //this.index++
+      if (this.index < this.questions.length - 1) {
+        this.$store.dispatch('NEXT')
+      } else {
+        this.submit();
+      }
+    },
+    previous() {
+     this.$store.dispatch('BACK')
+    },   
+    submit() {
+      this.$store.dispatch('COUNT_CORRECT')
+      this.$router.push('/result')
+    },
+    unescape(answer){
+      return _.unescape(answer.replace('/"/g',""));
     }
+    
   },
   computed: {
-    answers() {
-      let answers = [...this.currentQuestion.incorrect_answers]
-      answers.push(this.currentQuestion.correct_answer)
-      return answers
-    }
-  }
+      ...mapState([
+        'allQuestions',
+        'selectedIndice',
+        'questions','index'
+      ])
+  },
+  mounted(){
+    console.log("mounted in questionbox..");
+    //     fetch("https://opentdb.com/api.php?amount=10&category=18&type=multiple", {
+    //   method: "get"
+    // })
+    //   .then(response => {
+    //     return response.json();
+    //   })
+    //   .then(jsonData => {
+    //     this.questions = jsonData.results;
+    //     this.questionSize = this.questions.length;
+    //     this.selectedIndice = Array(this.questionSize).fill(null);
+    //     this.questions.forEach(element => {
+    //       let answer = [...element.incorrect_answers, element.correct_answer];
+    //       this.allQuestions.push({
+    //         question: element.question,
+    //         answer: _.shuffle(answer),
+    //         correctAnswer: element.correct_answer
+    //       });
+    //     });
+    //   });
+
+    this.$store.dispatch('GET_ALLQUESTIONS')
+  },
 };
 </script>
 
@@ -111,6 +131,9 @@ export default {
 .not-active{
   pointer-events: none;
   cursor: default;
+}
+.btn-success {
+  margin-left: 5px;
 }
 
 </style>
