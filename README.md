@@ -1,5 +1,5 @@
 # vquiz
-
+Vue quiz application using vuejs, vue router, vuex and REST API. 
 ## Project setup
 ```
 yarn install
